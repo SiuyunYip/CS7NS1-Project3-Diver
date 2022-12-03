@@ -1,4 +1,4 @@
-#!/user/bin/python3
+#!../pj3-env/bin/python
 
 import socket
 import threading
