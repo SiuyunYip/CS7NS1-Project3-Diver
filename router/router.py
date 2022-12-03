@@ -5,6 +5,7 @@ import threading
 import sys, getopt
 
 
+# Author: Zhaoyuan YE
 
 class Router:
 
@@ -26,6 +27,7 @@ class Router:
         self.sender_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         # router name ip table
         self.router_name_list = []
+        # read the config file containing router info
         with open('./config/config.txt', 'rb') as f:
             lines = f.readlines()
             for line in lines:
@@ -43,7 +45,8 @@ class Router:
 
     def updatePIT(self, interest_name, requester_name, addr, operation='update'):
         if operation == 'update':
-            # interest_name: Bob/Temperature; requester_name: control center
+            # interest_name: e.g., diver/area/1/bob/Temperature;
+            # requester_name: control center
             if interest_name in self.pit:
                 self.pit[interest_name].add(requester_name)
             else:
@@ -61,13 +64,12 @@ class Router:
         if resource_name in self.fib:
             next_hop_list = self.fib[resource_name]
             if len(next_hop_list) > 3:
+                # record next hops' names (maximum 3)
                 next_hop_list.pop()
                 self.fib[resource_name].insert(0, sender_name)
         else:
             next_hop_list = [sender_name]
             self.fib[resource_name] = next_hop_list
-        # if the sender of this resource packet is an unknown host
-        # update the name ip map
         self.updateNameIpMap(sender_name, addr)
 
     def isInCS(self, name):
@@ -93,7 +95,7 @@ class Router:
             return interest
 
     # interest name: diver/area/{num}/{name}/{content}/
-    # interest format: "interest,interest_name,requester_name,ttl"
+    # interest format: "interest,interest_name,requester_name,(ttl)"
     def forwardInterest(self, interest, ttl=None):
         if interest in self.fib:
             next_hops = self.fib[interest]
@@ -101,17 +103,6 @@ class Router:
                 new_msg = "interest," + interest + "," + self.router_name
                 self.sendData(interest, new_msg, next_hop)
         else:
-            # prefix matching
-            # name_arr = interest.split('/')
-            # final_match = ''
-            # tmp = ''
-            # for name in name_arr:
-            #     tmp = tmp + name
-            #     if tmp not in self.fib:
-            #         break
-            #     final_match = tmp
-            #     tmp = tmp + '/'
-
             final_match = ''
             name_arr_len = len(interest.split('/'))
             for _ in range(name_arr_len):
@@ -130,7 +121,6 @@ class Router:
                 self.sendData('', new_msg, final_match)
 
     def sendData(self, name, new_msg, dest_name=None):
-        # new_resource_msg = "resource," + self.router_name + "," + resource_name + "," + resource_content
         if dest_name is None:
             if name in self.pit:
                 requester_names = self.pit[name]
@@ -148,19 +138,11 @@ class Router:
                 print('destination:' + dest_name + ' addr:' + ip_port[0] + ':' + ip_port[1])
                 self.sender_sock.sendto(new_msg.encode(), (ip_port[0], int(ip_port[1])))
 
-    def getAreaPrefix(self, full_interest):
-        name_arr = full_interest.split('/')
-        area_prefix = ''
-        for i in range(3):
-            area_prefix = area_prefix + name_arr[i] + '/'
-
-        return area_prefix[:-1]
-
-    # diver/area/1/Bob/temperature
     def forward2Router(self, interest, ttl=None):
         # interest message: "interest,interest_name,requester_name,ttl"
         new_msg = ''
         if ttl is None:
+            # add ttl in case of circle
             new_msg = 'interest,' + interest + ',' + self.router_name + ',' + self.ttl
         else:
             new_ttl = int(ttl)
@@ -176,7 +158,7 @@ class Router:
 
     # message format:
     # discover message: "discover,sender_name" stored in name_ip_map
-    # interest message: "interest,interest_name,requester_name" stored in pit
+    # interest message: "interest,interest_name,requester_name,(ttl)" stored in pit
     # resource message: "resource,sender_name,resource_name,val"
     #                   update fib and store content in content store
     def handleMsg(self, msg, addr):
