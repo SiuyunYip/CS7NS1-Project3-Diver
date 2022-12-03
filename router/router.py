@@ -1,4 +1,4 @@
-#!./pj3-env/bin/python
+#!../pj3-env/bin/python
 
 import socket
 import threading
@@ -26,7 +26,7 @@ class Router:
         self.sender_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         # router name ip table
         self.router_name_list = []
-        with open('config/config.txt', 'rb') as f:
+        with open('./config/config.txt', 'rb') as f:
             lines = f.readlines()
             for line in lines:
                 info = line.strip().decode().split(',')
