@@ -62,12 +62,9 @@ class Device:
             clientMsg = message.decode("utf-8")
 
             if clientMsg.startswith('discover'):
-                # discover,diver/area/1
                 print('Received area name: ', clientMsg)
                 self.area = clientMsg.split(',')[1]
             else:
-                # msgFromServer = i[1] + "\n" + sensorData(clientMsg, i[1])
-                # resource format: "resource,sender_name,resource_name,val"
                 msgToServer = "resource," + i[1] + "," + self.area + '/' + i[1] + '/' + self.sensorData(clientMsg)
                 print(msgToServer)
                 bytesToSend = str.encode(msgToServer)
