@@ -1,6 +1,12 @@
 # CS7NS1-Project3-Diver
 
-To run this project on local, use following instructions under the directory CS7NS1-Project3-Diver:
+You can run this whole project by runing runme.sh
+
+To run this project manually on local, plz make sure you have python virtual environment under the directory CS7NS1-Project3-Diver named as pj3-env
+or
+you can change the first line of router.py and device_1/2.py (i.e., ../pj3-env/bin/python) to your own interpreter
+
+After that, use following instructions to start:
 
 **To start router 1:**
   ./router/router.py -o 127.0.0.1 -p 33333 -d 33343 -n diver/area/1
@@ -18,6 +24,4 @@ To run this project on local, use following instructions under the directory CS7
 
 **To start consumer:**
   python3 ./consumer/consumer.py
-
-You can run this whole project using runme.sh
 
